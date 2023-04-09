@@ -23,4 +23,6 @@ def Predict(image_path: str):
     print(f"照片是{'女' if argmax(res, dim=-1).item() == 0 else '男'}性")
 
 
+Predict("/Users/andrewlee/Desktop/Projects/动手深度学习/实操/基于softmax线性回归的性别识别系统/截屏2023-04-09 17.39.41.png")
 Predict("/Users/andrewlee/Desktop/Projects/动手深度学习/实操/基于softmax线性回归的性别识别系统/截屏2023-04-09 17.27.57.png")
+Predict("/Users/andrewlee/Desktop/Projects/动手深度学习/实操/基于softmax线性回归的性别识别系统/截屏2023-04-09 20.04.49.png")

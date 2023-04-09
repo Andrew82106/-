@@ -5,7 +5,7 @@ import dirTool
 import os
 from torch import nn
 from torch.nn import Conv2d, MaxPool2d, Flatten, Linear, CrossEntropyLoss
-from torch.optim import SGD
+from torch.optim import SGD, Adam
 from torchvision import transforms
 
 
@@ -43,7 +43,8 @@ class CIFAR10_Model(nn.Module):
             Conv2d(32, 64, 5, padding=2),
             MaxPool2d(2),
             Flatten(),
-            Linear(1024, 64),
+            Linear(1024, 512),
+            Linear(512, 64),
             Linear(64, 2)
         )
 
@@ -54,7 +55,6 @@ class CIFAR10_Model(nn.Module):
 if __name__ == '__main__':
     rootLoc = "/Users/andrewlee/Desktop/Projects/动手深度学习/实操/基于softmax线性回归的性别识别系统"
     device = torch.device("mps")
-
     TrainDataset_female = ImageDataset(rootLoc, 'female', (32, 32), True)
     TrainDataset_male = ImageDataset(rootLoc, 'male', (32, 32), True)
     TrainDataset = (TrainDataset_male + TrainDataset_female)
@@ -66,15 +66,28 @@ if __name__ == '__main__':
     ValidateDataset = DataLoader(ValidateDataset, batch_size=32, shuffle=True)
 
     model = CIFAR10_Model().to(device)
-    optimer = SGD(model.parameters(), lr=0.01)
+
+    for name, param in model.named_parameters():
+
+        if 'weight' in name:
+            nn.init.normal_(param, mean=0, std=0.01)
+            # print(name, param.data)
+
+        if 'bias' in name:
+            nn.init.constant_(param, val=0)
+            # print(name, param.data)
+
+    # optimer = SGD(model.parameters(), lr=0.01)
+    optimer = Adam(model.parameters(), lr=0.01)
     lossFun = CrossEntropyLoss().to(device)
 
-    num_of_epoch = 20
+    num_of_epoch = 12
     cnt = 0
     for epoch in range(num_of_epoch):
 
         print(f"---------epoch{epoch}----------")
         loss_sum = 0
+        model.train()
         for img, label in TrainDataset:
             img = img.to(device)
             label = label.to(device)
@@ -85,20 +98,25 @@ if __name__ == '__main__':
             loss.backward()
             optimer.step()
             cnt += 1
-            if cnt % 40 == 0:
-                print(f"loss:{loss}")
+            """if cnt % 40 == 0:
+                print(f"loss:{loss}")"""
         print(f"epoch:{epoch} loss:{loss_sum}")
 
-        total_test_loss = 0
+        model.eval()
+        # 计算准确率
+        correct = 0
+        total = 0
         with torch.no_grad():
 
             for img, label in ValidateDataset:
                 img = img.to(device)
                 label = label.to(device)
-                output = model(img)
-                loss = lossFun(output, label)
-                total_test_loss += loss.item()
-        print(f"loss in Validate dataset: {total_test_loss}")
+                outputs = model(img)
+                _, predicted = torch.max(outputs.data, 1)
+                # 计算正确预测的数量
+                total += label.size(0)
+                correct += (predicted == label).sum().item()
+        print("Accuracy: {:.2f}%".format(100 * correct / total))
 
     torch.save(model, "./CIFAR10_Model.pth")
 
