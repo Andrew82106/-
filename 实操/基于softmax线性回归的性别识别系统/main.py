@@ -1,3 +1,5 @@
+import os
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 import torch
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
@@ -6,6 +8,7 @@ import os
 from torch import nn
 from torch.nn import Conv2d, MaxPool2d, Flatten, Linear, CrossEntropyLoss
 from torch.optim import SGD, Adam
+from OptimLion import Lion
 from torchvision import transforms
 
 
@@ -77,8 +80,8 @@ if __name__ == '__main__':
             nn.init.constant_(param, val=0)
             # print(name, param.data)
 
-    # optimer = SGD(model.parameters(), lr=0.01)
-    optimer = Adam(model.parameters(), lr=0.01)
+    optimer = SGD(model.parameters(), lr=0.01)
+    # optimer = Lion(model.parameters())
     lossFun = CrossEntropyLoss().to(device)
 
     num_of_epoch = 12
@@ -98,8 +101,8 @@ if __name__ == '__main__':
             loss.backward()
             optimer.step()
             cnt += 1
-            """if cnt % 40 == 0:
-                print(f"loss:{loss}")"""
+            if cnt % 40 == 0:
+                print(f"loss:{loss}")
         print(f"epoch:{epoch} loss:{loss_sum}")
 
         model.eval()
