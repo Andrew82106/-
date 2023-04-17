@@ -4,12 +4,12 @@ import torch
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import dirTool
-import os
 from torch import nn
 from torch.nn import Conv2d, MaxPool2d, Flatten, Linear, CrossEntropyLoss
 from torch.optim import SGD, Adam
 from OptimLion import Lion
 from torchvision import transforms
+# from torch.utils.tensorboard import SummaryWriter
 
 
 class ImageDataset(Dataset):
@@ -61,12 +61,12 @@ if __name__ == '__main__':
     TrainDataset_female = ImageDataset(rootLoc, 'female', (32, 32), True)
     TrainDataset_male = ImageDataset(rootLoc, 'male', (32, 32), True)
     TrainDataset = (TrainDataset_male + TrainDataset_female)
-    TrainDataset = DataLoader(TrainDataset, batch_size=128, shuffle=True)
+    TrainLoader = DataLoader(TrainDataset, batch_size=128, shuffle=True)
 
     ValidateDataset_female = ImageDataset(rootLoc, 'female', (32, 32), False)
     ValidateDataset_male = ImageDataset(rootLoc, 'male', (32, 32), False)
     ValidateDataset = ValidateDataset_male + ValidateDataset_female
-    ValidateDataset = DataLoader(ValidateDataset, batch_size=32, shuffle=True)
+    ValidateLoader = DataLoader(ValidateDataset, batch_size=32, shuffle=True)
 
     model = CIFAR10_Model().to(device)
 
@@ -74,24 +74,25 @@ if __name__ == '__main__':
 
         if 'weight' in name:
             nn.init.normal_(param, mean=0, std=0.01)
-            # print(name, param.data)
 
         if 'bias' in name:
             nn.init.constant_(param, val=0)
-            # print(name, param.data)
 
-    optimer = SGD(model.parameters(), lr=0.01)
+    optimer = Adam(model.parameters(), lr=0.01)
+    # optimer = SGD(model.parameters(), lr=0.01)
     # optimer = Lion(model.parameters())
     lossFun = CrossEntropyLoss().to(device)
 
-    num_of_epoch = 12
+    num_of_epoch = 5
     cnt = 0
+    f = open(f"logs_train/logs optimer:{'Adam,lr=0.01'}.txt", "w", encoding="utf-8")
+
     for epoch in range(num_of_epoch):
 
         print(f"---------epoch{epoch}----------")
         loss_sum = 0
         model.train()
-        for img, label in TrainDataset:
+        for img, label in TrainLoader:
             img = img.to(device)
             label = label.to(device)
             output = model(img)
@@ -103,7 +104,9 @@ if __name__ == '__main__':
             cnt += 1
             if cnt % 40 == 0:
                 print(f"loss:{loss}")
+                f.write(f"cnt=={cnt}:loss=={loss}\n")
         print(f"epoch:{epoch} loss:{loss_sum}")
+        f.write(f"epoch:{epoch} sum_loss:{loss_sum}\n")
 
         model.eval()
         # 计算准确率
@@ -111,7 +114,7 @@ if __name__ == '__main__':
         total = 0
         with torch.no_grad():
 
-            for img, label in ValidateDataset:
+            for img, label in ValidateLoader:
                 img = img.to(device)
                 label = label.to(device)
                 outputs = model(img)
@@ -119,8 +122,11 @@ if __name__ == '__main__':
                 # 计算正确预测的数量
                 total += label.size(0)
                 correct += (predicted == label).sum().item()
+
         print("Accuracy: {:.2f}%".format(100 * correct / total))
+        f.write(f"epoch:{epoch} test accuracy: {100 * correct / total}\n")
 
     torch.save(model, "./CIFAR10_Model.pth")
 
+    f.close()
     print("end")
