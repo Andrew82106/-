@@ -1,6 +1,6 @@
 # 网络功能
 
-对input data进行分类
+复现CIFAR 10 quick model，对input data进行分类
 
 # 网络结构
 
@@ -19,23 +19,17 @@
 
 # 网络复现
 
-
 ## 代码
-
 
 代码在main.py中，运行完后的模型存放在CIFAR10_Model.pth中
 
 使用训练好的模型进行预测的代码是useTrainedModel.py
 
-
 ## 实验效果
-
 
 我尝试了不同的优化器：经典的SGD，Adam，以及google最新的Lion优化器
 
-
 事实证明，Lion优化器名副其实。
-
 
 模型训练loss
 
@@ -48,6 +42,5 @@
 模型准确率
 
 ![image.png](assets/image3.png)
-
 
 我感觉SGD应该是出了什么问题，可能代码没写好，但是懒得改了。
