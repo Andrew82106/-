@@ -8,10 +8,10 @@ from torch.nn import Sequential, Conv2d, ReLU, MaxPool2d, Linear, Flatten, Dropo
 
 class LeNet(nn.Module):
 
-    def __init__(self):
+    def __init__(self, classify_types=1000):
         super(LeNet, self).__init__()
         self.model = Sequential(
-            Conv2d(1, 6, 5, padding=2),
+            Conv2d(3, 6, 5, padding=2),
             Sigmoid(),
             MaxPool2d(2, stride=2),
             Conv2d(6, 16, 5),
@@ -21,7 +21,7 @@ class LeNet(nn.Module):
             Sigmoid(),
             Linear(120, 84),
             Sigmoid(),
-            Linear(84, 10)
+            Linear(84, classify_types)
         )
 
     def forward(self, Input):
@@ -30,36 +30,36 @@ class LeNet(nn.Module):
 
 class AlexNet(nn.Module):
 
-    def __init__(self):
+    def __init__(self, classify_types=1000):
         super(AlexNet, self).__init__()
         self.partA = Sequential(
             Conv2d(3, 96, 11, stride=4),
-            ReLU(),
+            ReLU(inplace=True),  # 这里使用了inplace=True，应该是本地修改？
             MaxPool2d(3, stride=2)
         )
         self.partB = Sequential(
             Conv2d(96, 256, 5, padding=2),
-            ReLU(),
+            ReLU(inplace=True),
             MaxPool2d(3, stride=2)
         )
         self.partC = Sequential(
             Conv2d(256, 384, 3, padding=1),
-            ReLU(),
+            ReLU(inplace=True),
             Conv2d(384, 384, 3, padding=1),
-            ReLU(),
+            ReLU(inplace=True),
             Conv2d(384, 256, 3, padding=1),
-            ReLU(),
+            ReLU(inplace=True),
             MaxPool2d(3, stride=2)
         )
         self.output = Sequential(
             Flatten(),
             Linear(5*5*256, 4096),
-            ReLU(),
+            ReLU(inplace=True),
             Dropout(),
             Linear(4096, 4096),
-            ReLU(),
+            ReLU(inplace=True),
             Dropout(),
-            Linear(4096, 1000),
+            Linear(4096, classify_types),
         )
 
     def forward(self, Input):

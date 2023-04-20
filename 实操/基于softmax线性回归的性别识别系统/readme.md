@@ -44,3 +44,6 @@
 ![image.png](assets/image3.png)
 
 我感觉SGD应该是出了什么问题，可能代码没写好，但是懒得改了。
+
+
+- note:出现了奇怪的事情，pytorch突然读不动DataLoader了，然后重新装一个环境，DataLoader就可以装了......
