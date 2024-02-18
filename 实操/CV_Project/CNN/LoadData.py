@@ -1,11 +1,14 @@
 import cv2
 import tqdm
+import torch
+import numpy as np
 import os
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader, TensorDataset
 
 
-def readSingleImage(pth, target_shape=(109, 84)):
+# def readSingleImage(pth, target_shape=(109, 84)):
+def readSingleImage(pth, target_shape=(32, 32)):
     """
     输入路径pth，输出这个图形的ndarray形式，并将其调整为目标形状
     :param pth: 图形路径
@@ -17,7 +20,10 @@ def readSingleImage(pth, target_shape=(109, 84)):
     # 调整图像大小
     resized_img = cv2.resize(img, target_shape)
 
-    return resized_img
+    # 将图像转换为PyTorch的Tensor
+    tensor_img = torch.from_numpy(np.transpose(resized_img, (2, 0, 1))).float()
+
+    return tensor_img
 
 
 class PicDataset(Dataset):
@@ -33,28 +39,11 @@ class PicDataset(Dataset):
 
     def __getitem__(self, item):
         return readSingleImage(self.picLst[item]), self.label
-    # 返回样本的时候返回标签和图形
+    # 返回样本的时候返回标签和图形，标签就在这里打
 
     def __len__(self):
         return len(self.picLst)
 
-
-"""
-def loadDataset(RouteList):
-    trans = transforms.ToTensor()
-    img_list = []
-    Type_list = []
-    for i in tqdm.tqdm(RouteList):
-        img = cv.imread(i[0])
-        tensor = trans(img).flatten()
-        tensor *= 10000
-        for kk in range(50000):  # 数据集增强5w倍
-            img_list.append(torch.squeeze(tensor.resize_(1, maxlength)))
-            Type_list.append(0 if i[1] == 'female' else 1)
-    imgs = torch.stack(img_list, dim=0)
-    Type = torch.Tensor(Type_list)
-    return DataLoader(dataset=TensorDataset(imgs, Type), batch_size=batch_size, shuffle=1)
-"""
 
 if __name__ == '__main__':
     TrainingFemale = PicDataset(
