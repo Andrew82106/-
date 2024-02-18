@@ -2,8 +2,9 @@
 
 使用性别识别作为目标问题的深度学习练手项目
 
-
 ## 方案1：基于CNN的图像识别算法
 
-
 - 主脚本：mainCNN.py
+- 模型算法：CIFAR 10 model
+
+![](./asset/image.png)
