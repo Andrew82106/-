@@ -46,6 +46,7 @@ class PicDataset(Dataset):
 
 
 if __name__ == '__main__':
+
     TrainingFemale = PicDataset(
         '/Users/andrewlee/Desktop/Projects/动手深度学习/实操/CV_Project/archive/Training/female',
         0
