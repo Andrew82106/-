@@ -1,16 +1,31 @@
+import os.path
+import torch
+
 from baseConfig import *
 from CNN.LoadData import *
 from CNN.model import *
 from torch.optim import Adam
-from torch.nn import CrossEntropyLoss
+from torch.nn import CrossEntropyLoss, MSELoss
 import tqdm
 from CNN.OptimLion import Lion
+from CNN.drawFig import *
+
+
+def loadSavedModel(modelStructure, modelPath):
+    checkpoint = torch.load(modelPath)
+    modelStructure.load_state_dict(checkpoint)
+    return modelStructure
+
+
+def saveModel(TrainedModel, modelPath):
+    torch.save(TrainedModel.state_dict(), modelPath)
+
 
 
 if __name__ == '__main__':
-    batch_size = 10
-    epoch = 50
-    learning_rate = 0.001
+    batch_size = 256
+    epoch = 100
+    learning_rate = 0.01
     deviceName = 'mps'
 
     TrainData = PicDataset(archiveTrainingFemalePath, 0) + PicDataset(archiveTrainingMalePath, 1)
@@ -24,7 +39,9 @@ if __name__ == '__main__':
     # optimer = Adam(model.parameters(), lr=learning_rate)
     optimer = Lion(model.parameters(), lr=learning_rate)
     loss = CrossEntropyLoss()
+    loss1 = MSELoss()
     loss.to(device)
+    loss1.to(device)
 
     for name, param in model.named_parameters():
 
@@ -32,24 +49,16 @@ if __name__ == '__main__':
             nn.init.normal_(param, mean=0, std=0.01)
             print(name, param.shape, param.device)
 
+
         if 'bias' in name:
             nn.init.constant_(param, val=0)
             print(name, param.shape, param.device)
 
+    acc = -1
+    bestModel = None
+    acc_history = []
+    loss_history = []
     for E in range(epoch):
-
-        model.eval()
-        with torch.no_grad():
-            sumLoss = 0
-            cnt = 0
-            for img, label in TestLoader:
-                img = img.to(device).type(torch.float32)
-                label = label.to(device)
-                predicted = model(img)
-                sumLoss += loss(predicted, label)
-                cnt += 1
-            print(f"Test loss:{sumLoss / cnt}")
-
 
         sumLoss = 0
         cnt = 0
@@ -63,5 +72,28 @@ if __name__ == '__main__':
             batchLoss.backward()
             optimer.step()
             sumLoss += batchLoss
-            cnt += batch_size
-        print(f'loss={float(sumLoss)/cnt}')
+        print(f'loss={float(sumLoss)}')
+        loss_history.append(float(sumLoss))
+
+        model.eval()
+        sumCount = 0
+        allCount = 0
+        with torch.no_grad():
+            for img, label in TestLoader:
+                img = img.to(device).type(torch.float32)
+                label = label.to(device)
+                predicted = torch.argmax(model(img), dim=1)
+                equal_elements = torch.eq(predicted, label)
+                count = torch.sum(equal_elements).item()
+                sumCount += count
+                allCount += len(predicted)
+            print(f"Test acc:{sumCount / allCount}")
+            if sumCount / allCount > acc:
+                acc = sumCount / allCount
+                bestModel = model
+                print("got best performance")
+            acc_history.append(sumCount / allCount)
+
+    saveModel(bestModel, os.path.join(CNNPath, 'modelCache', f"CNN_best_acc={acc}.pth"))
+    draw_line_chart(acc_history, X='epoch', Y='accuracy', title='accuracy history', saveLocation=os.path.join(CNNPath, 'trainingLogs', 'accuracy.png'))
+    draw_line_chart(loss_history, X='epoch', Y='loss', title='loss history', saveLocation=os.path.join(CNNPath, 'trainingLogs', 'loss.png'))
