@@ -1,6 +1,6 @@
 import random
 
-numOfX = 7
+numOfX = 10
 numOfInstance = int(1e4)
 
 

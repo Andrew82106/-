@@ -10,7 +10,7 @@ class LinearDataset(Dataset):
 
     def __getitem__(self, item):
         X_ = torch.tensor(self.X[item], dtype=torch.float32)
-        Y_ = torch.tensor(self.Y[item], dtype=torch.float32)
+        Y_ = torch.tensor([self.Y[item]], dtype=torch.float32)
         return X_, Y_
 
     def __len__(self):
