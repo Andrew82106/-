@@ -13,7 +13,7 @@ from makeData import numOfX
 
 trainDataset = LinearDataset()
 validateDataset = LinearDataset()
-batchSize = 16
+batchSize = 32
 numOfEpoch = 100
 trainDataLoader = DataLoader(trainDataset, batch_size=batchSize, shuffle=True)
 validateDataLoader = DataLoader(validateDataset, batch_size=batchSize, shuffle=True)
@@ -23,10 +23,11 @@ model = LinerRegressionModel(numOfX)
 for para in model.parameters():
     para.data.normal_(0, 0.1)
 
-optim = Adam(model.parameters(), lr=0.01)
+optim = SGD(model.parameters(), lr=0.000001)
 loss = L1Loss()
 
 paraLst = [[] for _ in range(numOfX)]
+biasLst = []
 lossLst = []
 
 for Epoch in range(numOfEpoch):
@@ -34,11 +35,20 @@ for Epoch in range(numOfEpoch):
     sumLoss = 0
     cnt = 0
     for X, Y in trainDataLoader:
+        # print("Start Batch")
         for name, param in model.named_parameters():
             if 'bias' in name:
+                biasLst.append(float(param.data[0]))
+                # print(f"bias:{float(param.data[0])}")
                 continue
             for Index in range(numOfX):
                 paraLst[Index].append(float(param.data[0][Index]))
+                # print(f"para{Index}: {float(param.data[0][Index])}")
+
+        for name, param in model.named_parameters():
+            if param.grad is not None:
+                print(f"Layer: {name}, Weight: {float(param.data)}, Gradient: {float(param.grad)}")
+
         output = model(X)
         batchLoss = loss(output, Y)
         optim.zero_grad()
@@ -61,6 +71,7 @@ print(f"validation average loss:{sumLoss / cnt}")
 
 plot_paraLst(paraLst)
 plot_muti_Line({"loss history": lossLst})
+plot_muti_Line({"bias history": biasLst})
 
 for name, param in model.named_parameters():
     print(name, param)
