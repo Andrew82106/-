@@ -10,7 +10,17 @@ $$
 y=\sum_{i=1}^n w_i\times x_i
 $$
 
-因此，我们定义训练数据为$X_{(n\times 1)}=\begin{bmatrix}\vec{x_1} \\ \vec{x_2} \\ ... \\ \vec{x_n}\end{bmatrix}=\begin{bmatrix}(x_{11} & x_{12}&...&x_{1m} )\\...&...&...&...\\(x_{n1} & x_{n2}&...&x_{nm} )\end{bmatrix}$，模型参数为$W_{(1\times n)}=\begin{bmatrix}\vec{w_1} \\ \vec{w_2} \\ ... \\ \vec{w_n}\end{bmatrix}^T=\begin{bmatrix}(w_{11} & w_{12}&...&w_{1m} )\\...&...&...&...\\(w_{n1} & w_{n2}&...&w_{nm}) \end{bmatrix}^T, where  \ w_{ij}=2^{j-1}$，待预测值为$Y_{(n\times 1)}=XW=\begin{bmatrix}\vec{x_1}\cdot\vec{w_1} \\ ... \\ \vec{x_n}\cdot\vec{w_n}\end{bmatrix}=\begin{bmatrix}\sum_{i-1}^m w_{1i}\times x_{1i} \\ ... \\ \sum_{i-1}^m w_{ni}\times x_{ni} \end{bmatrix}$
+因此，我们定义训练数据为
+
+$$X_{(n\times 1)}=\begin{bmatrix}\vec{x_1} \\ \vec{x_2} \\ ... \\ \vec{x_n}\end{bmatrix}=\begin{bmatrix}(x_{11} & x_{12}&...&x_{1m} )\\...&...&...&...\\(x_{n1} & x_{n2}&...&x_{nm} )\end{bmatrix}$$
+
+模型参数为
+
+$$W_{(1\times n)}=\begin{bmatrix}\vec{w_1} \\ \vec{w_2} \\ ... \\ \vec{w_n}\end{bmatrix}^T=\begin{bmatrix}(w_{11} & w_{12}&...&w_{1m} )\\...&...&...&...\\(w_{n1} & w_{n2}&...&w_{nm}) \end{bmatrix}^T, where  \ w_{ij}=2^{j-1}$$
+
+待预测值为
+
+$$Y_{(n\times 1)}=XW=\begin{bmatrix}\vec{x_1}\cdot\vec{w_1} \\ ... \\ \vec{x_n}\cdot\vec{w_n}\end{bmatrix}=\begin{bmatrix}\sum_{i-1}^m w_{1i}\times x_{1i} \\ ... \\ \sum_{i-1}^m w_{ni}\times x_{ni} \end{bmatrix}$$
 
 使用一般的线性回归当然可以求出$W_{(1\times n)}$的解析解，但这里如果使用深度学习的方法去拟合，即使得不到解析解，并且速度也慢，但是由于问题背景非常简单，在实验过程中能解释很多深度学习中的问题。
 
@@ -93,7 +103,9 @@ $$
 
 参数的更新公式可以表示为：
 
-- **权重参数**：$w_{new} = w_{old} - \eta \cdot \frac{\partial L}{\partial w}$
+$$
+w_{new} = w_{old} - \eta \cdot \frac{\partial L}{\partial w}
+$$
 
 其中，$w$ 和 $b$ 分别表示权重和偏置参数，$\eta$ 是学习率，$L$ 是损失函数，$\frac{\partial L}{\partial w}$ 是损失函数对权重的偏导数，这个偏导数就是我们所说的梯度。
 
